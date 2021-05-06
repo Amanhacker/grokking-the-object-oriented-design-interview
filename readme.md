@@ -1,5 +1,7 @@
 <h1 align="center">Grokking the Object Oriented Design Interview</h1>
 
+This resource is just the cracked version of Grokking the OOPs Design Interview of Educative.io. Go through the same for either Machine Coding Round or Low Level Design Round.
+
 I create this repository as extended version of [Grokking the Object Oriented Design Interview](https://www.educative.io/courses/grokking-the-object-oriented-design-interview) course. I add `example-codes` part for better understanding.
 
 ### **Notes:**
