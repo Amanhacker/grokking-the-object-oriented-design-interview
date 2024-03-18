@@ -56,15 +56,15 @@ Here is the use case diagram of our Chess Game:
 
 Here are the main classes for chess:
 
-**Player:** Player class represents one of the participants playing the game. It keeps track of which side (black or white) the player is playing.
-**Account:** We’ll have two types of accounts in the system: one will be a player, and the other will be an admin.
-**Game:** This class controls the flow of a game. It keeps track of all the game moves, which player has the current turn, and the final result of the game.
-**Box:** A box represents one block of the 8x8 grid and an optional piece.
-**Board:** Board is an 8x8 set of boxes containing all active chess pieces.
-**Piece:** The basic building block of the system, every piece will be placed on a box. This class contains the color the piece represents and the status of the piece (that is, if the piece is currently in play or not). This would be an abstract class and all game pieces will extend it.
-**Move:** Represents a game move, containing the starting and ending box. The Move class will also keep track of the player who made the move, if it is a castling move, or if the move resulted in the capture of a piece.
-**GameController:** Player class uses GameController to make moves.
-**GameView:** Game class updates the GameView to show changes to the players.
+**Player:** Player class represents one of the participants playing the game. It keeps track of which side (black or white) the player is playing.<br />
+**Account:** We’ll have two types of accounts in the system: one will be a player, and the other will be an admin.<br />
+**Game:** This class controls the flow of a game. It keeps track of all the game moves, which player has the current turn, and the final result of the game.<br />
+**Box:** A box represents one block of the 8x8 grid and an optional piece.<br />
+**Board:** Board is an 8x8 set of boxes containing all active chess pieces.<br />
+**Piece:** The basic building block of the system, every piece will be placed on a box. This class contains the color the piece represents and the status of the piece (that is, if the piece is currently in play or not). This would be an abstract class and all game pieces will extend it.<br />
+**Move:** Represents a game move, containing the starting and ending box. The Move class will also keep track of the player who made the move, if it is a castling move, or if the move resulted in the capture of a piece.<br />
+**GameController:** Player class uses GameController to make moves.<br />
+**GameView:** Game class updates the GameView to show changes to the players.<br />
 
 <p align="center">
     <img src="/media-files/chess-class-diagram.png" alt="Chess Class Diagram">
@@ -232,6 +232,81 @@ class ChessBoard:
         else:
             raise RuntimeError("Unknown color of the king piece")
 
+```
+
+**Piece:** An abstract class to encapsulate common functionality of all chess pieces:
+
+```python
+from abc import ABC
+from .constants import PieceType
+from .moves import ChessPosition
+from .king import King
+from .queen import Queen
+from .knight import Knight
+from .rook import Rook
+from .bishop import Bishop
+from .pawn import Pawn
+
+
+class Piece(ABC):
+    BLACK = "black"
+    WHITE = "white"
+
+    def __init__(self, position: ChessPosition, color):
+        self._position = position
+        self._color = color
+
+    @property
+    def position(self):
+        return self._position
+
+    @property
+    def color(self):
+        return self._color
+
+    def move(self, target_position):
+        self._position = target_position
+
+    def get_threatened_positions(self, board):
+        raise NotImplementedError
+
+    def get_moveable_positions(self, board):
+        raise NotImplementedError
+
+    def symbol(self):
+        black_color_prefix = '\u001b[31;1m'
+        white_color_prefix = '\u001b[34;1m'
+        color_suffix = '\u001b[0m'
+        retval = self._symbol_impl()
+        if self.color == Piece.BLACK:
+            retval = black_color_prefix + retval + color_suffix
+        else:
+            retval = white_color_prefix + retval + color_suffix
+        return retval
+
+    def _symbol_impl(self):
+        raise NotImplementedError
+
+class PieceFactory:
+    @staticmethod
+    def create(piece_type: str, position: ChessPosition, color):
+        if piece_type == PieceType.KING:
+            return King(position, color)
+        
+        if piece_type == PieceType.QUEEN:
+            return Queen(position, color)
+        
+        if piece_type == PieceType.KNIGHT:
+            return Knight(position, color)
+        
+        if piece_type == PieceType.ROOK:
+            return Rook(position, color)
+        
+        if piece_type == PieceType.BISHOP:
+            return Bishop(position, color)
+        
+        if piece_type == PieceType.PAWN:
+            return Pawn(position, color)
 ```
 
 **King:** To encapsulate King as a chess piece:
@@ -410,80 +485,9 @@ class Pawn(Piece):
 
 ```
 
-**Piece:** An abstract class to encapsulate common functionality of all chess pieces:
-
-```python
-from .constants import PieceType
-from .moves import ChessPosition
-from .king import King
-from .queen import Queen
-from .knight import Knight
-from .rook import Rook
-from .bishop import Bishop
-from .pawn import Pawn
 
 
-class Piece:
-    BLACK = "black"
-    WHITE = "white"
 
-    def __init__(self, position: ChessPosition, color):
-        self._position = position
-        self._color = color
-
-    @property
-    def position(self):
-        return self._position
-
-    @property
-    def color(self):
-        return self._color
-
-    def move(self, target_position):
-        self._position = target_position
-
-    def get_threatened_positions(self, board):
-        raise NotImplementedError
-
-    def get_moveable_positions(self, board):
-        raise NotImplementedError
-
-    def symbol(self):
-        black_color_prefix = '\u001b[31;1m'
-        white_color_prefix = '\u001b[34;1m'
-        color_suffix = '\u001b[0m'
-        retval = self._symbol_impl()
-        if self.color == Piece.BLACK:
-            retval = black_color_prefix + retval + color_suffix
-        else:
-            retval = white_color_prefix + retval + color_suffix
-        return retval
-
-    def _symbol_impl(self):
-        raise NotImplementedError
-
-class PieceFactory:
-    @staticmethod
-    def create(piece_type: str, position: ChessPosition, color):
-        if piece_type == PieceType.KING:
-            return King(position, color)
-        
-        if piece_type == PieceType.QUEEN:
-            return Queen(position, color)
-        
-        if piece_type == PieceType.KNIGHT:
-            return Knight(position, color)
-        
-        if piece_type == PieceType.ROOK:
-            return Rook(position, color)
-        
-        if piece_type == PieceType.BISHOP:
-            return Bishop(position, color)
-        
-        if piece_type == PieceType.PAWN:
-            return Pawn(position, color)
-
-```
 
 **Move:** To encapsulate a chess move:
 
